@@ -1,0 +1,6 @@
+framework module Pods_firebase_crud_sampleUITests {
+  umbrella header "Pods-firebase_crud_sampleUITests-umbrella.h"
+
+  export *
+  module * { export * }
+}
