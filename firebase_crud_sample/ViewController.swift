@@ -7,94 +7,95 @@
 //
 
 import UIKit
-import Firebase
+//import Firebase
+import FirebaseDatabase
+import JSQMessagesViewController
 
-class ViewController: UIViewController {
-    @IBOutlet weak var textView: UIView!
-    @IBOutlet weak var nameTextField: UITextField!
-    @IBOutlet weak var messageTextField: UITextField!
-    enum textFieldKind:Int {
-        case name = 1
-        case message = 2
-    }
-    var defaultstore:Firestore!
-
+class ViewController: JSQMessagesViewController {
+    
+    var messages = [JSQMessage]()
     override func viewDidLoad() {
         super.viewDidLoad()
-        //delegate宣言し、入力時の処理をViewControllerClassへ委任する
-        messageTextField.delegate = self
-        nameTextField.delegate = self
-        //firebaseへのコネクション開始
-        defaultstore = Firestore.firestore()
-        //addSnapshotListenerでかfirebaseを監視して実行
-        defaultstore.collection("chat").addSnapshotListener { (snapShot, error) in
-            //不正な値だったら処理を抜ける
-            guard let value = snapShot else {
-                print("snapShot is nil")
+        senderDisplayName = "hogeko"
+        senderId = "Hogeko"
+        let ref = Database.database().reference()
+        ref.observe(.value, with: { snapshot in
+            guard let dic = snapshot.value as? Dictionary<String, AnyObject> else {
                 return
             }
-            value.documentChanges.forEach{diff in
-                //更新内容が追加だった時
-                if diff.type == .added {
-                    //追加された値を変更に入れる
-                    let chatDataOp = diff.document.data() as? Dictionary<String, String>
-                    guard let chatData = chatDataOp else {
-                        return
+            guard let posts = dic["messages"] as? Dictionary<String, Dictionary<String, AnyObject>> else {
+                return
+            }
+            //keyとdateが入ったTupleを作成
+            var keyValueArray: [(String, Int)] = []
+            for (key, value) in posts {
+                keyValueArray.append((key: key, date: value["date"] as! Int))
+            }
+            // タプルの中のdate でソートしてタプルの順番を揃える(配列で) これでkeyが順番通りになる
+            keyValueArray.sort{$0.1 < $1.1}
+            // messagesを再構成
+            var preMessages = [JSQMessage]()
+            for sortedTuple in keyValueArray {
+                for (key, value) in posts {
+                    if key == sortedTuple.0 {
+                         // 揃えた順番通りにメッセージを作成
+                        let senderId = value["senderId"] as! String
+                        let text = value["text"] as! String
+                        let displayName = value["displayName"] as! String
+                        preMessages.append(JSQMessage(senderId: senderId, displayName: displayName, text: text))
                     }
-                    guard let message = chatData["message"] else {
-                        return
-                    }
-                    guard let name = chatData["name"] else {
-                        return
-                    }
-                    //textViewに新しいメッセージを追加
-//                    self.textView.tex =  "\(self.textView.text!)\n\(name) : \(message)"
-
                 }
             }
-        }
-        // Do any additional setup after loading the view, typically from a nib.
+//            self.messages = posts.values.map { dic in
+//                let senderId = dic["senderId"] ?? "" as AnyObject
+//                let text = dic["text"] ?? "" as AnyObject
+//                let displayName = dic["displayName"] ?? "" as AnyObject
+//                return JSQMessage(senderId: senderId as? String,  displayName: displayName as! String, text: text as! String)
+//            }
+            self.messages = preMessages
+            self.collectionView.reloadData()
+        })
     }
-}
-extension ViewController:UITextFieldDelegate {
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        print("returnが押されたよ")
-        //キーボードを閉じる
-        textField.resignFirstResponder()
-        //nameTextFieldの場合は　returnを押してもFirestoreへ行く処理をしない
-        if textField.tag == textFieldKind.name.rawValue {
-            return true
+    override func collectionView(_ collectionView: JSQMessagesCollectionView!, messageDataForItemAt indexPath: IndexPath!) -> JSQMessageData! {
+        return messages[indexPath.row]
+    }
+    // コメントの背景色の指定
+    override func collectionView(_ collectionView: JSQMessagesCollectionView!, messageBubbleImageDataForItemAt indexPath: IndexPath!) -> JSQMessageBubbleImageDataSource! {
+        if messages[indexPath.row].senderId == senderId {
+            return JSQMessagesBubbleImageFactory().outgoingMessagesBubbleImage(with: UIColor(red: 112/255, green: 192/255, blue:  75/255, alpha: 1))
+        } else {
+            return JSQMessagesBubbleImageFactory().incomingMessagesBubbleImage(with: UIColor(red: 229/255, green: 229/255, blue: 229/255, alpha: 1))
         }
-        //nameに入力されたテキストを変数に入れる。nilの場合はFirestoreへ行く処理をしない
-        guard let name = nameTextField.text else {
-            return true
+    }
+    // コメントの文字色の指定
+    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = super.collectionView(collectionView, cellForItemAt: indexPath) as! JSQMessagesCollectionViewCell
+        if messages[indexPath.row].senderId == senderId {
+            cell.textView.textColor = UIColor.white
+        } else {
+            cell.textView.textColor = UIColor.darkGray
         }
-        
-        //nameが空欄の場合はFirestoreへ行く処理をしない
-        if nameTextField.text == "" {
-            return true
-        }
-        
-        //messageに入力されたテキストを変数に入れる。nilの場合はFirestoreへ行く処理をしない
-        guard let message = messageTextField.text else {
-            return true
-        }
-        
-        //messageが空欄の場合はFirestoreへ行く処理をしない
-        if messageTextField.text == "" {
-            return true
-        }
-        
-        //入力された値を配列に入れる
-        let messageData: [String: String] = ["name":name, "message":message]
-        
-        //Firestoreに送信する
-        defaultstore.collection("chat").addDocument(data: messageData)
-        //メッセージの中身を空にする
-        messageTextField.text = ""
-        
-        return true
+        return cell
     }
     
+    // メッセージの数
+    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return messages.count
+    }
+    
+    // ユーザのアバターの設定
+    override func collectionView(_ collectionView: JSQMessagesCollectionView!, avatarImageDataForItemAt indexPath: IndexPath!) -> JSQMessageAvatarImageDataSource! {
+        return JSQMessagesAvatarImageFactory.avatarImage(
+            withUserInitials: messages[indexPath.row].senderDisplayName,
+            backgroundColor: UIColor.lightGray,
+            textColor: UIColor.white,
+            font: UIFont.systemFont(ofSize: 10),
+            diameter: 30)
+    }
+    //送信ボタンを押した時の処理
+    override func didPressSend(_ button: UIButton!, withMessageText text: String!, senderId: String!, senderDisplayName: String!, date: Date!) {
+        inputToolbar.contentView.textView.text = ""
+        let ref = Database.database().reference()
+        ref.child("messages").childByAutoId().setValue(["senderId" : senderId, "text" : text, "displayName": senderDisplayName, "date": [".sv": "timestamp"]])
+    }
 }
-

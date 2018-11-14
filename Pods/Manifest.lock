@@ -25,6 +25,9 @@ PODS:
   - FirebaseAuthInterop (1.0.0)
   - FirebaseCore (5.1.4):
     - GoogleUtilities/Logger (~> 5.2)
+  - FirebaseDatabase (5.0.0):
+    - FirebaseCore (~> 5.0)
+    - leveldb-library (~> 1.18)
   - FirebaseFirestore (0.13.4):
     - FirebaseAuthInterop (~> 1.0)
     - FirebaseCore (~> 5.0)
@@ -99,6 +102,9 @@ PODS:
   - gRPC/Main (1.14.0):
     - gRPC-Core (= 1.14.0)
     - gRPC-RxLibrary (= 1.14.0)
+  - JSQMessagesViewController (7.2.0):
+    - JSQSystemSoundPlayer (~> 2.0.1)
+  - JSQSystemSoundPlayer (2.0.1)
   - leveldb-library (1.20)
   - nanopb (0.3.8):
     - nanopb/decode (= 0.3.8)
@@ -110,6 +116,8 @@ PODS:
 DEPENDENCIES:
   - Firebase/Core
   - Firebase/Firestore
+  - FirebaseDatabase (from `https://github.com/firebase/firebase-ios-sdk.git`, tag `5.0.0`)
+  - JSQMessagesViewController (from `https://github.com/jessesquires/JSQMessagesViewController`, tag `7.2.0`)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
@@ -127,9 +135,26 @@ SPEC REPOS:
     - gRPC-Core
     - gRPC-ProtoRPC
     - gRPC-RxLibrary
+    - JSQSystemSoundPlayer
     - leveldb-library
     - nanopb
     - Protobuf
+
+EXTERNAL SOURCES:
+  FirebaseDatabase:
+    :git: https://github.com/firebase/firebase-ios-sdk.git
+    :tag: 5.0.0
+  JSQMessagesViewController:
+    :git: https://github.com/jessesquires/JSQMessagesViewController
+    :tag: 7.2.0
+
+CHECKOUT OPTIONS:
+  FirebaseDatabase:
+    :git: https://github.com/firebase/firebase-ios-sdk.git
+    :tag: 5.0.0
+  JSQMessagesViewController:
+    :git: https://github.com/jessesquires/JSQMessagesViewController
+    :tag: 7.2.0
 
 SPEC CHECKSUMS:
   BoringSSL: e10f92a27043805c01071fe815a5cd98ae8212e7
@@ -137,6 +162,7 @@ SPEC CHECKSUMS:
   FirebaseAnalytics: 831f1f127f4a75698e9875a87bf7e2668730d953
   FirebaseAuthInterop: 0ffa57668be100582bb7643d4fcb7615496c41fc
   FirebaseCore: 2a84b6b325792a4319ef71ee18819dcba08d2fd7
+  FirebaseDatabase: 697eb53e5b4fe7cd4fa8756c1f82a9fca011345f
   FirebaseFirestore: eaf0b6244e9463e2429fe216666b641e4dec606b
   FirebaseInstanceID: 78ba376fcd5b94c001f9999b2cbd3d1f1e56e78d
   GoogleAppMeasurement: 2b3a023a61239c8d002e6e4fcf4abce8eddce0e0
@@ -146,10 +172,12 @@ SPEC CHECKSUMS:
   gRPC-Core: f4836515817c0eb479aeeb9cc27c91c4ba62a9f6
   gRPC-ProtoRPC: 76f6053639a842e1fb45fa82aa598bf3f4d9f66f
   gRPC-RxLibrary: 3c305f32155024b116b780f389323c73a28197e6
+  JSQMessagesViewController: 73cab48aa92fc2d512f3b6724f3425cc47a19eb5
+  JSQSystemSoundPlayer: c5850e77a4363ffd374cd851154b9af93264ed8d
   leveldb-library: 08cba283675b7ed2d99629a4bc5fd052cd2bb6a5
   nanopb: 5601e6bca2dbf1ed831b519092ec110f66982ca3
   Protobuf: 1eb9700044745f00181c136ef21b8ff3ad5a0fd5
 
-PODFILE CHECKSUM: e6be47aa203739826639157415d619a704ff9db0
+PODFILE CHECKSUM: 682388465c3ee51ffa905f9b5c3f340e64ac590c
 
 COCOAPODS: 1.5.3

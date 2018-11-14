@@ -8,6 +8,8 @@ target 'firebase_crud_sample' do
   # Pods for firebase_crud_sample
   pod 'Firebase/Core'
   pod 'Firebase/Firestore'
+  pod 'FirebaseDatabase', :git => 'https://github.com/firebase/firebase-ios-sdk.git', :tag => '5.0.0'
+  pod 'JSQMessagesViewController', :git => 'https://github.com/jessesquires/JSQMessagesViewController', :tag => '7.2.0'
 
   target 'firebase_crud_sampleTests' do
     inherit! :search_paths
